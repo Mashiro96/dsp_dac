@@ -70,7 +70,7 @@ end
 
 assign waddr_nxt = (write_en && !full) ? waddr + 'b1 : waddr;
 assign waddr_gre = waddr ^ {1'b0, waddr[AWIDTH:1]};
-assign waddr_nxt_gre = waddr_nxt ^ {1'b0, waddr[AWIDTH:1]};
+assign waddr_nxt_gre = waddr_nxt ^ {1'b0, waddr_nxt[AWIDTH:1]};
 
 
 always @(posedge wclk or negedge rst_n) begin
@@ -106,7 +106,7 @@ end
 
 assign raddr_nxt = (read_en && !empty) ? raddr + 'b1 : raddr;
 assign raddr_gre = raddr ^ {1'b0, raddr[AWIDTH:1]};
-assign raddr_nxt_gre = raddr_nxt ^ {1'b0, raddr[AWIDTH:1]};
+assign raddr_nxt_gre = raddr_nxt ^ {1'b0, raddr_nxt[AWIDTH:1]};
 
 always @ (posedge rclk or negedge rst_n) begin
     if(!rst_n)

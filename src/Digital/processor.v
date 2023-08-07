@@ -56,6 +56,7 @@ wire                 inputfifo_empty;
 wire   [31:0]        dsp_leftin;
 wire   [31:0]        dsp_rightin;
 wire                 dsp_readfifo;
+wire                 inputfifo_ren;
 wire                 dsp_writefifo;
 wire                 outputfifo_full;
 wire                 outputfifo_empty;
@@ -88,33 +89,35 @@ sync_iic_port             iicport (
     .regmap_iic_bytes_num (regmap_iic_bytes_num)
 );
 
-sync_iis_port              iisport (
-    .clk                   (pclk),
-    .sck                   (i2s_sck),
-    .sdin                  (i2s_sdin),
-    .lrclk                 (i2s_lrclk),
-    .rst_n                 (rst_n),
-    .regmap_iis_bitsnum    (regmap_iis_bitsnum),
-    .regmap_iis_port_sel   (regmap_iis_port_sel),
-    .regmap_iis_offset     (regmap_iis_offset),
-    .write_en              (i2s_writefifo),
-    .iis_adsp_left_data    (i2s_leftdata),
-    .iis_adsp_right_data   (i2s_rightdata)
+async_iis_port            iis_port (
+    .sck                  (i2s_sck),
+    .sdin                 (i2s_sdin),
+    .lrclk                (i2s_lrclk),
+    .rst_n                (rst_n),
+    .regmap_iis_bitsnum   (regmap_iis_bitsnum),
+    .regmap_iis_port_sel  (regmap_iis_port_sel),
+    .regmap_iis_offset    (regmap_iis_offset),
+    .write_en             (i2s_writefifo),
+    .iis_adsp_left_data   (i2s_leftdata),
+    .iis_adsp_right_data  (i2s_rightdata)
 );
 
-syncfifo #(
+asyncfifo #(
     64,
-    2
+    2   
 )                          inputfifo (
     .wdata                 ({i2s_leftdata, i2s_rightdata}),
-    .write_en              (i2s_writefifo && !dsp_bypass_en),
+    .write_en              (i2s_writefifo),
+    .wclk                  (i2s_sck),
     .rst_n                 (rst_n),
     .full                  (inputfifo_full),
     .rdata                 ({dsp_leftin, dsp_rightin}),
-    .read_en               (dsp_readfifo),
-    .clk                   (pclk),
+    .read_en               (inputfifo_ren),
+    .rclk                  (pclk),
     .empty                 (inputfifo_empty)
 );
+
+assign inputfifo_ren = dsp_bypass_en ? !inputfifo_empty : dsp_readfifo;
 
 dsp                        dsp_processor (
     .clk                   (pclk),
@@ -142,10 +145,10 @@ dsp                        dsp_processor (
     .dsp_dac_isi_en        (dsp_dac_isi_en)
 );
 
-assign out_fifo_wdata = dsp_bypass_en ? {i2s_leftdata[31:8], i2s_rightdata[31:8]} 
+assign out_fifo_wdata = dsp_bypass_en ? {dsp_leftin[31:8],  dsp_rightin[31:8]} 
                                       : {dsp_leftout[31:8], dsp_rightout[31:8]};
 
-assign out_fifo_wen = dsp_bypass_en ? i2s_writefifo : dsp_writefifo;
+assign out_fifo_wen = dsp_bypass_en ? !inputfifo_empty : dsp_writefifo;
 
 syncfifo #(
     48,
