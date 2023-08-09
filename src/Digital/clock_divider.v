@@ -63,7 +63,7 @@ always @ (posedge clk or negedge rst_n) begin
         clk_cnt[1] <= 10'b0;
     end
     else if (div4_en) begin
-        clk_cnt[1] <= ~clk_cnt[2];
+        clk_cnt[1] <= ~clk_cnt[1];
     end
 end
 always @ (posedge clk or negedge rst_n) begin
