@@ -120,5 +120,5 @@ Audio_DAC_Dig_V1p0   dac_dig_top_inst (
     .STCout          (STCout)
 );
 
-assign analog_clk = div_cnt[2];
+assign analog_clk = div_cnt[1];
 endmodule

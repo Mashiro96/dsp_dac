@@ -32,6 +32,7 @@ output             div8_32_neg_en;  // 192   khz negedge
 output             div8_64_neg_en;  // 96    khz negedge
 output [9:0]       clk_cnt;
 
+wire               div4_en;
 wire               div8_0_en;       // 49.152 Mhz / 8    = 6.144 Mhz
 wire               div8_2_en;       // 49.152 Mhz / 16   = 3.072 Mhz
 wire               div8_4_en;       // 49.152 Mhz / 32   = 1.536 Mhz
@@ -57,6 +58,14 @@ always @ (posedge clk or negedge rst_n) begin
         div_cnt <= div_cnt + 10'b1;
 end
 
+always @ (posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        clk_cnt[1] <= 10'b0;
+    end
+    else if (div4_en) begin
+        clk_cnt[1] <= ~clk_cnt[2];
+    end
+end
 always @ (posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         clk_cnt[2] <= 10'b0;
@@ -122,6 +131,7 @@ always @ (posedge clk or negedge rst_n) begin
     end
 end
 
+assign div4_en         = (div_cnt[1:0] == 3'h1);
 assign div8_0_en       = (div_cnt[2:0] == 3'h3);
 assign div8_0_neg_en   = (div_cnt[2:0] == 3'h7);
 assign div8_2_en       = div8_0_en && !div_cnt[3];
