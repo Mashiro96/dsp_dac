@@ -12,8 +12,29 @@
 //#      Update: 2023/7/18        #
 // ###############################
 
-module Audio_DAC_Dig_V1p0(clock, rstn, rclk, ISI_SEL, MIS_SEL, Data_in,
-						  SVBout, STBout, SVCout, STCout);
+module Audio_DAC_Dig_V1p0(
+	clock,
+    div8_0_en,
+    div8_0_neg_en,
+    div8_2_en,
+    div8_4_en,
+    div8_8_en,
+    div8_8_neg_en,
+    div8_16_en,
+    div8_32_en,
+    div8_32_neg_en,
+    div8_64_en,
+    div8_64_neg_en,
+    div8_128_en,
+	div_cnt,
+	rstn, 
+	ISI_SEL, 
+	MIS_SEL, 
+	Data_in,
+	SVBout, 
+	STBout, 
+	SVCout, 
+	STCout);
 
 //--------------------------------------------------
 // ### Input ports:
@@ -31,62 +52,45 @@ module Audio_DAC_Dig_V1p0(clock, rstn, rclk, ISI_SEL, MIS_SEL, Data_in,
 
 
 input clock, rstn, ISI_SEL, MIS_SEL;
-output rclk;
+input div8_0_en;   // 49.152 Mhz / 8    = 6.144 Mhz
+input div8_2_en;   // 49.152 Mhz / 16   = 3.072 Mhz
+input div8_4_en;   // 49.152 Mhz / 32   = 1.536 Mhz
+input div8_8_en;   // 49.152 Mhz / 64   = 768   khz
+input div8_16_en;  // 49.152 Mhz / 128  = 384   khz
+input div8_32_en;  // 49.152 Mhz / 256  = 192   khz
+input div8_64_en;  // 49.152 Mhz / 512  = 96    khz
+input div8_128_en; // 49.152 Mhz / 1024 = 48    khz
+input div8_0_neg_en;
+input div8_8_neg_en;
+input div8_32_neg_en;
+input div8_64_neg_en;
+input [9:0] div_cnt;
 input signed [23:0] Data_in;
 output [17:0] SVBout;
 output [5:0]  SVCout;
 output [17:0] STBout;
 output [5:0]  STCout;
-wire rclk;
-
-//###clock divider###
-//Clock div2
-reg clk_div2_r;
-wire clock_div2;
-always @(posedge clock or negedge rstn)begin
-	if(rstn==0)begin
-		clk_div2_r<='b0;
-	end
-	else begin
-		clk_div2_r<=~clk_div2_r;
-	end
-end
-assign clock_div2=clk_div2_r;
-
-//CLock div4
-reg clk_div4_r;
-wire clock_div4;
-always @(posedge clock_div2 or negedge rstn)begin
-	if(rstn==0)begin
-		clk_div4_r<='b0;
-	end
-	else begin
-		clk_div4_r<=~clk_div4_r;
-	end
-end
-assign clock_div4=clk_div4_r;
-
-//Clock div8: 6.144MHz
-reg clk_div8_r;
-wire clock_div8; // the Filter_4th_stage frequency
-always @(posedge clock_div4 or negedge rstn)begin
-	if(rstn==0)begin
-		clk_div8_r<='b0;
-	end
-	else begin
-		clk_div8_r<=~clk_div8_r;
-	end
-end
-assign clock_div8=clk_div8_r;
 
 //IFIR_top_V1p3
 wire signed [23:0] Data_out1;
 wire signed [23:0] Data_out2;
 wire signed [23:0] Data_out3;
 wire signed [23:0] Data_out4;
-IFIR_top_V1p3 IFIR_top(.clock (clock_div8),
+IFIR_top_V1p3 IFIR_top(.clock (clock),
 					   .rstn (rstn),
-					   .rclk (rclk),
+					   .div8_0_en (div8_0_en),
+    				   .div8_0_neg_en (div8_0_neg_en),
+					   .div8_2_en (div8_2_en),
+					   .div8_4_en (div8_4_en),
+					   .div8_8_en (div8_8_en),
+					   .div8_8_neg_en (div8_8_neg_en),
+					   .div8_16_en (div8_16_en),
+					   .div8_32_en (div8_32_en),
+					   .div8_32_neg_en (div8_32_neg_en),
+					   .div8_64_en (div8_64_en),
+					   .div8_64_neg_en (div8_64_neg_en),
+					   .div8_128_en (div8_128_en),
+					   .div_cnt (div_cnt),
 					   .Data_in (Data_in),
 					   .Data_out1 (Data_out1),
 					   .Data_out2 (Data_out2),
@@ -96,21 +100,24 @@ IFIR_top_V1p3 IFIR_top(.clock (clock_div8),
 //SDM_V1p4
 wire signed [4:0] DataOut; 
 SDM_V1p4 SDM(.DataIn (Data_out4),
+			 .clk_en (div8_0_en),
 			 .DataOut (DataOut),
-			 .clock (clock_div8),
+			 .clock (clock),
 			 .rstn (rstn));
 
 //Segmentation_V1p4
 wire signed [5:0] B;
 wire signed [3:0] C;
-Segmentation_V1p4 Segmentation(.clock (clock_div8),
+Segmentation_V1p4 Segmentation(.clock (clock),
+							   .clk_en (div8_0_en),
 							   .rstn (rstn),
 							   .A (DataOut),
 							   .B (B),
 							   .C (C));
 							 
 //ISI_MS_V1p5
-ISI_MS_V1p5 ISI_MS(.clk (clock_div8),
+ISI_MS_V1p5 ISI_MS(.clk (clock),
+				   .clk_en (div8_0_en),
 				   .rstn (rstn),
 				   .VB (B),
 				   .VC (C),

@@ -7,14 +7,14 @@
 //# Version 1.4                 #
 //###############################
 
-module SDM_V1p4(DataOut,DataIn,clock,rstn);
+module SDM_V1p4(DataOut,DataIn,clock,clk_en,rstn);
 
 parameter signed a1_csd=24'b000001000100010000010001;
 parameter signed a2_csd=24'b010010000000001000000010;
 parameter signed a3_csd=24'b000000010001000001000100;
 parameter signed g_csd =24'b000000000000000000000001;
 
-input clock,rstn;
+input clock,clk_en,rstn;
 input signed [23:0] DataIn;
 output signed [4:0] DataOut;
 
@@ -56,8 +56,11 @@ always @(posedge clock or negedge rstn)begin //first integrator
 	if(rstn==0)begin
 		Xout1<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		Xout1<=Xout1+Xin1;
+	end
+	else begin
+		Xout1<=Xout1;
 	end
 end
 
@@ -65,8 +68,11 @@ always @(posedge clock or negedge rstn)begin //second integrator
 	if(rstn==0)begin
 		Xout2<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		Xout2<=Xout2+Xin2;
+	end
+	else begin
+		Xout2<=Xout2;
 	end
 end
 
@@ -74,8 +80,11 @@ always @(posedge clock or negedge rstn)begin //third integrator
 	if(rstn==0)begin
 		Xout3<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		Xout3<=Xout3+Xin3;
+	end
+	else begin
+		Xout3<=Xout3;
 	end
 end
 

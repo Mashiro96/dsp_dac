@@ -62,7 +62,7 @@ Dig_top                 top_dut (
     .STCout             (STCout)
 );
 
-always #D_CLK_PERIOD m_clk = ~m_clk;
+always #D_CLK_PERIOD m_clk <= ~m_clk;
 
 //************************************************
 //         I2C Sim Functions
@@ -70,18 +70,18 @@ always #D_CLK_PERIOD m_clk = ~m_clk;
 // send i2c start function
 // sda fall edge when sck is 1
 task start;
-    i2c_sdain = 'b0;
+    i2c_sdain <= 'b0;
     #(I2C_HOLD_PERIOD);
-    i2c_scl = 'b0;
+    i2c_scl <= 'b0;
 endtask
 
 // send i2c stop function
 // sda rise edge when sck is 1
 task stop;
     #(I2C_SCLK_PERIOD);
-    i2c_scl = 'b1;
+    i2c_scl <= 'b1;
     #(I2C_HOLD_PERIOD);
-    i2c_sdain = 'b1;
+    i2c_sdain <= 'b1;
     #5000;
 endtask
 
@@ -91,20 +91,20 @@ task tx_byte(
     // send data
     for (i=7; i>=0; i=i-1) begin
     #(I2C_HOLD_PERIOD);
-    i2c_sdain = data[i];
+    i2c_sdain <= data[i];
     #(I2C_SCLK_PERIOD-I2C_HOLD_PERIOD);
-    i2c_scl = 'b1;
+    i2c_scl <= 'b1;
     #(I2C_SCLK_PERIOD);
-    i2c_scl = 'b0;
+    i2c_scl <= 'b0;
     end
     #(I2C_HOLD_PERIOD);
-    i2c_sdain = 'b0;
+    i2c_sdain <= 'b0;
     // receive ack
     // dont check whether is correct here
     #(I2C_SCLK_PERIOD-I2C_HOLD_PERIOD);
-    i2c_scl = 'b1;
+    i2c_scl <= 'b1;
     #(I2C_SCLK_PERIOD);
-    i2c_scl = 'b0;
+    i2c_scl <= 'b0;
 endtask;
 
 // dont need rx byte here
@@ -118,57 +118,57 @@ task send_i2s_frame(
     input [63:0]    data,
     input           remainder
 );
-    i2s_sck = 'b0;
-    i2s_lrclk = 'b0;
+    i2s_sck <= 'b0;
+    i2s_lrclk <= 'b0;
     #(I2S_HOLD_PERIOD);
-    i2s_sdin = remainder;
+    i2s_sdin <= remainder;
     #(I2S_BCLK_PERIOD-I2S_HOLD_PERIOD);
-    i2s_sck = 'b1;
+    i2s_sck <= 'b1;
     #(I2S_BCLK_PERIOD);
-    i2s_sck = 'b0;
+    i2s_sck <= 'b0;
     #(I2S_HOLD_PERIOD);
     
     for (i=30; i>=0; i=i-1) begin
-    i2s_sdin = data[33+i];
+    i2s_sdin <= data[33+i];
     #(I2S_BCLK_PERIOD-I2S_HOLD_PERIOD);
-    i2s_sck = 1'b1;
+    i2s_sck <= 1'b1;
     #(I2S_BCLK_PERIOD);
-    i2s_sck = 'b0;
+    i2s_sck <= 'b0;
     #(I2S_HOLD_PERIOD);
     end
 
-    i2s_lrclk = 'b1;
+    i2s_lrclk <= 'b1;
     for (i=30; i>=0; i=i-1) begin
-    i2s_sdin = data[2+i];
+    i2s_sdin <= data[2+i];
     #(I2S_BCLK_PERIOD-I2S_HOLD_PERIOD);
-    i2s_sck = 1'b1;
+    i2s_sck <= 1'b1;
     #(I2S_BCLK_PERIOD);
-    i2s_sck = 'b0;
+    i2s_sck <= 'b0;
     #(I2S_HOLD_PERIOD);
     end
 
-    i2s_sdin = data[1];
+    i2s_sdin <= data[1];
     #(I2S_BCLK_PERIOD-I2S_HOLD_PERIOD);
-    i2s_sck = 'b1;
+    i2s_sck <= 'b1;
     #(I2S_BCLK_PERIOD);
-    i2s_sck = 'b0;
+    i2s_sck <= 'b0;
 
 endtask
 
 // reset
 initial begin
-    m_clk = 'b0;
-    rst_n = 'b0;
-    i2c_scl = 'b1;
-    i2c_sdain = 'b1;
-    i2s_sck = 'b1;
-    i2s_sdin = 'b1;
-    i2s_lrclk = 'b1;
-    rm_data = 'b0;
+    m_clk <= 'b0;
+    rst_n <= 'b0;
+    i2c_scl <= 'b1;
+    i2c_sdain <= 'b1;
+    i2s_sck <= 'b1;
+    i2s_sdin <= 'b1;
+    i2s_lrclk <= 'b1;
+    rm_data <= 'b0;
 
     // reset end
     #30000;
-    rst_n = 'b1;
+    rst_n <= 'b1;
 
     #200;
 

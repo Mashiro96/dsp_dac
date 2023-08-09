@@ -7,7 +7,7 @@
 //#            Version 1.5                 #
 // ########################################
 
-module ISI_MS_6_V1p5(clk, rstn, V, ISI_SEL, MIS_SEL,
+module ISI_MS_6_V1p5(clk, clk_en, rstn, V, ISI_SEL, MIS_SEL,
 					 SVout, STout);
 
 //---------------------------------------------------
@@ -55,7 +55,7 @@ module ISI_MS_6_V1p5(clk, rstn, V, ISI_SEL, MIS_SEL,
 //					     Dig_Sel	 disable;
 //---------------------------------------------------
 
-input clk, rstn, ISI_SEL, MIS_SEL;
+input clk, clk_en, rstn, ISI_SEL, MIS_SEL;
 input signed [3:0] V;//Input elements number
 output [5:0] SVout;  //Outoput SV vector
 output [5:0] STout;  //Outoput ST vector
@@ -81,33 +81,37 @@ reg signed [3:0] Vinput;
 
 assign SVDB=~SVD;
 
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn) begin
 	if(rstn==0)begin
 		Vinput<=0;
 	end
-	else begin
+	else if(clk_en) begin
 		Vinput<=V;
 	end
+	else begin
+		Vinput<=Vinput;
+	end
+end
 
 // Dither Sequence Generator OK
-Dither_Gen6 Dither_Gen6(.clk(clk), .rstn(rstn),
+Dither_Gen6 Dither_Gen6(.clk(clk), .clk_en(clk_en), .rstn(rstn),
 					    .dither(dither));
 
 // De-couple Sequence Generator OK
-Decp_Gen6 Decp_Gen6(.clk(clk), .rstn(rstn), .dither(dither), .V(Vinput),
+Decp_Gen6 Decp_Gen6(.clk(clk), .clk_en(clk_en), .rstn(rstn), .dither(dither), .V(Vinput),
 				    .Gama(Gama), .Beta(Beta));
 
 // HMLF Operation OK
-HMLF6_2nd HMLF6_2nd(.clk(clk), .rstn(rstn), .SV(SV),
+HMLF6_2nd HMLF6_2nd(.clk(clk), .clk_en(clk_en), .rstn(rstn), .SV(SV),
 				    .SD(SVD),
 				    .SFM5(SFM[5]), .SFM4(SFM[4]), .SFM3(SFM[3]), .SFM2(SFM[2]), .SFM1(SFM[1]), .SFM0(SFM[0]));
 
 // Transition Operation OK
-Tran_Det6 Tran_Det6(.clk(clk), .rstn(rstn), .SV(SVD), //这个SV的传输需要非常的注意，必须是SV的一个delay周期
+Tran_Det6 Tran_Det6(.clk(clk), .clk_en(clk_en), .rstn(rstn), .SV(SVD), //这个SV的传输需要非常的注意，必须是SV的一个delay周期
 				    .ST(ST));
 
 // HILF Operation OK
-HILF6_1st HILF6_1st(.clk(clk), .rstn(rstn), .ST(ST),
+HILF6_1st HILF6_1st(.clk(clk), .clk_en(clk_en), .rstn(rstn), .ST(ST),
 				    .SFI5(SFI[5]), .SFI4(SFI[4]), .SFI3(SFI[3]), .SFI2(SFI[2]), .SFI1(SFI[1]), .SFI0(SFI[0]));
 
 // MAX Operation OK

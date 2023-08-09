@@ -4,7 +4,7 @@
 // Version 1.6
 //##################################
 
-module HMLF6_2nd(clk, rstn, SV, SD,
+module HMLF6_2nd(clk, clk_en, rstn, SV, SD,
 				 SFM5,SFM4,SFM3,SFM2,SFM1,SFM0);
 
 //----------------------------------
@@ -16,7 +16,7 @@ module HMLF6_2nd(clk, rstn, SV, SD,
 //----------------------------------
 
 input [5:0] SV;
-input clk, rstn;
+input clk, clk_en, rstn;
 output [5:0] SFM5,SFM4,SFM3,SFM2,SFM1,SFM0;
 output [5:0] SD;
 
@@ -37,7 +37,7 @@ MIN6_HMLF MIN6_2(.a5(SE2[5]), .a4(SE2[4]), .a3(SE2[3]), .a2(SE2[2]), .a1(SE2[1])
 			     .b(SU2));
 
 // 移位的功能
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn) begin
 	if(rstn==0)begin
 		SVD[5]<=0;
 		SVD[4]<=0;
@@ -60,7 +60,7 @@ always @(posedge clk or negedge rstn)
 		SMD2[1]<=0;
 		SMD2[0]<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		SVD[5]<={5'b0,SV[5]};
 		SVD[4]<={5'b0,SV[4]};
 		SVD[3]<={5'b0,SV[3]};
@@ -82,6 +82,29 @@ always @(posedge clk or negedge rstn)
 		SMD2[1]<=SM2[1];
 		SMD2[0]<=SM2[0];
 	end
+	else begin
+		SVD[5]<=SVD[5];
+		SVD[4]<=SVD[4];
+		SVD[3]<=SVD[3];
+		SVD[2]<=SVD[2];
+		SVD[1]<=SVD[1];
+		SVD[0]<=SVD[0];
+		
+		SMD1[5]<=SMD1[5];
+		SMD1[4]<=SMD1[4];
+		SMD1[3]<=SMD1[3];
+		SMD1[2]<=SMD1[2];
+		SMD1[1]<=SMD1[1];
+		SMD1[0]<=SMD1[0];
+		
+		SMD2[5]<=SMD2[5];
+		SMD2[4]<=SMD2[4];
+		SMD2[3]<=SMD2[3];
+		SMD2[2]<=SMD2[2];
+		SMD2[1]<=SMD2[1];
+		SMD2[0]<=SMD2[0];
+	end
+end
 
 // SE Node
 assign SE1[5]=-SVD[5]+SMD1[5];

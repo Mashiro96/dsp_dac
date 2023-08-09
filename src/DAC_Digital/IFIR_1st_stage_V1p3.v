@@ -4,7 +4,7 @@
 // Version 1.3
 //-------------------------------------------------
 
-module IFIR_1st_stage_V1p3(Data_out,Data_in,clock_in,clock_up,rstn);
+module IFIR_1st_stage_V1p3(Data_out,Data_in,clock_in,clock_div2,clock_up,clock,rstn);
 
 // signed CSD coefficients
 parameter signed b1 =28'b0000000000000000000000100000;
@@ -21,7 +21,8 @@ parameter signed b11=28'b0000001000010010000000000010;
 parameter signed b12=28'b0000010001000000010000010010;
 parameter signed b13=28'b0001000000000000000000000000;
 
-input clock_in,clock_up,rstn;
+input clock_in,clock_div2,clock_up,rstn;
+input clock;
 input signed [23:0] Data_in;
 output reg signed [23:0] Data_out;
 reg signed [23:0] s[0:23];
@@ -119,30 +120,34 @@ CSD_mult mult24(.CSD_in (b13),
 				.Data_out (Data_a1));
 
 //MUX实现上采样
-always @(negedge clock_up or negedge rstn)
+always @(posedge clock or negedge rstn)
 	if(rstn==0)begin
 		Data_out=0;
 	end
-	else if(clock_in==0 & rstn==1)begin
+	else if(!clock_div2 && clock_up)begin
 		Data_out=Data_a1[35:12];
 	end
-	else if(clock_in==1 & rstn==1)begin
+	else if(clock_div2 && clock_up)begin
 		Data_out=Data_a0[35:12];
 	end
 	else begin
-		Data_out=0;
+		Data_out=Data_out;
 	end
 
 //完成移位的功能
-always @(posedge clock_in or negedge rstn)
+always @(posedge clock or negedge rstn)
 	if(rstn==0)begin
 		for(k=0;k<=23;k=k+1)
 			s[k]<=0;
 	end
-	else begin
+	else if(clock_in)begin
 		s[1]<=Data_in;
 		for(k=2;k<=23;k=k+1)
 			s[k]<=s[k-1];
+	end
+	else begin
+		for(k=0;k<=23;k=k+1)
+			s[k]<=s[k];
 	end
 
 endmodule

@@ -4,7 +4,7 @@
 // Version 1.5
 //###################################
 
-module HMLF18_2nd_V1p5(clk, rstn, SV, SD,
+module HMLF18_2nd_V1p5(clk, clk_en, rstn, SV, SD,
 					   SFM17,SFM16,SFM15,SFM14,SFM13,SFM12,SFM11,SFM10,
 				       SFM9,SFM8,SFM7,SFM6,SFM5,SFM4,SFM3,SFM2,SFM1,SFM0);
 
@@ -17,7 +17,7 @@ module HMLF18_2nd_V1p5(clk, rstn, SV, SD,
 //-----------------------------------
 
 input [17:0] SV;
-input clk, rstn;
+input clk, clk_en, rstn;
 output [6:0] SFM17,SFM16,SFM15,SFM14,SFM13,SFM12,SFM11,SFM10,SFM9,SFM8,SFM7,SFM6,SFM5,SFM4,SFM3,SFM2,SFM1,SFM0;
 output [17:0] SD;
 
@@ -42,7 +42,7 @@ MIN18_HMLF_V1p5 MIN18_2(.a17(SE2[17]), .a16(SE2[16]), .a15(SE2[15]), .a14(SE2[14
 						.a3(SE2[3]),   .a2(SE2[2]),   .a1(SE2[1]),   .a0(SE2[0]),   .b(SU2));
 
 // 移位的功能
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn)begin
 	if(rstn==0)begin
 		SVD[17]<=0;
 		SVD[16]<=0;
@@ -101,7 +101,7 @@ always @(posedge clk or negedge rstn)
 		SMD2[1]<=0;
 		SMD2[0]<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		SVD[17]<={6'b0,SV[17]};
 		SVD[16]<={6'b0,SV[16]};
 		SVD[15]<={6'b0,SV[15]};
@@ -159,6 +159,65 @@ always @(posedge clk or negedge rstn)
 		SMD2[1]<=SM2[1];
 		SMD2[0]<=SM2[0];
 	end
+	else begin
+		SVD[17]<=SVD[17];
+		SVD[16]<=SVD[16];
+		SVD[15]<=SVD[15];
+		SVD[14]<=SVD[14];
+		SVD[13]<=SVD[13];
+		SVD[12]<=SVD[12];
+		SVD[11]<=SVD[11];
+		SVD[10]<=SVD[10];
+		SVD[9]<=SVD[9];
+		SVD[8]<=SVD[8];
+		SVD[7]<=SVD[7];
+		SVD[6]<=SVD[6];
+		SVD[5]<=SVD[5];
+		SVD[4]<=SVD[4];
+		SVD[3]<=SVD[3];
+		SVD[2]<=SVD[2];
+		SVD[1]<=SVD[1];
+		SVD[0]<=SVD[0];
+		
+		SMD1[17]<=SMD1[17];
+		SMD1[16]<=SMD1[16];
+		SMD1[15]<=SMD1[15];
+		SMD1[14]<=SMD1[14];
+		SMD1[13]<=SMD1[13];
+		SMD1[12]<=SMD1[12];
+		SMD1[11]<=SMD1[11];
+		SMD1[10]<=SMD1[10];
+		SMD1[9]<=SMD1[9];
+		SMD1[8]<=SMD1[8];
+		SMD1[7]<=SMD1[7];
+		SMD1[6]<=SMD1[6];
+		SMD1[5]<=SMD1[5];
+		SMD1[4]<=SMD1[4];
+		SMD1[3]<=SMD1[3];
+		SMD1[2]<=SMD1[2];
+		SMD1[1]<=SMD1[1];
+		SMD1[0]<=SMD1[0];
+		
+		SMD2[17]<=SMD2[17];
+		SMD2[16]<=SMD2[16];
+		SMD2[15]<=SMD2[15];
+		SMD2[14]<=SMD2[14];
+		SMD2[13]<=SMD2[13];
+		SMD2[12]<=SMD2[12];
+		SMD2[11]<=SMD2[11];
+		SMD2[10]<=SMD2[10];
+		SMD2[9]<=SMD2[9];
+		SMD2[8]<=SMD2[8];
+		SMD2[7]<=SMD2[7];
+		SMD2[6]<=SMD2[6];
+		SMD2[5]<=SMD2[5];
+		SMD2[4]<=SMD2[4];
+		SMD2[3]<=SMD2[3];
+		SMD2[2]<=SMD2[2];
+		SMD2[1]<=SMD2[1];
+		SMD2[0]<=SMD2[0];
+	end
+end
 
 // SE Node
 assign SE1[17]=-SVD[17]+SMD1[17];

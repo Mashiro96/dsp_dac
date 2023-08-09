@@ -1,6 +1,6 @@
 {
     "input_config": {
-        "Amp": 1,
+        "Amp": 128,
         "frame": 96
     },
     "global_config": {

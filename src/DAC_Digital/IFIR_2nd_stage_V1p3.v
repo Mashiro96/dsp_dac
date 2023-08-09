@@ -4,7 +4,7 @@
 // Version 1.3
 //-------------------------------------------------
 
-module IFIR_2nd_stage_V1p3(Data_out,Data_in,clock_in,clock_up,rstn);
+module IFIR_2nd_stage_V1p3(Data_out,Data_in,clock_in,clock_div2,clock_up,clock,rstn);
 
 // Signed CSD coefficients
 parameter signed b1=28'b0000000000000000000001000001;
@@ -16,7 +16,8 @@ parameter signed b6=28'b0000000000000000010000000001;
 parameter signed b7=28'b0000010010000000000001001000;
 parameter signed b8=28'b0001001000000010000000000100;
 
-input clock_in,clock_up,rstn;
+input clock_in,clock_div2,clock_up,rstn;
+input clock;
 input signed [23:0] Data_in; 
 output reg signed [23:0] Data_out;
 reg signed [23:0] s[0:7];
@@ -82,30 +83,34 @@ assign Data_a1=csdout[1]+csdout[3]+csdout[5]+csdout[7]+
 			   csdout[9]+csdout[11]+csdout[13]+csdout[15];
 
 //MUX实现上采样
-always @(negedge clock_up or negedge rstn)
+always @(posedge clock or negedge rstn)
 	if(rstn==0)begin
 		Data_out=0;
 	end
-	else if(clock_in==0 & rstn==1)begin
+	else if(!clock_div2 && clock_up)begin
 		Data_out=Data_a1[35:12];
 	end
-	else if(clock_in==1 & rstn==1)begin
+	else if(clock_div2 && clock_up)begin
 		Data_out=Data_a0[35:12];
 	end
 	else begin
-		Data_out=0;
+		Data_out=Data_out;
 	end
 
 //完成移位的功能
-always @(posedge clock_in or negedge rstn)
+always @(posedge clock or negedge rstn)
 	if(rstn==0)begin
 		for(k=0;k<=7;k=k+1)
 			s[k]<=0;
 	end
-	else begin
+	else if(clock_in)begin
 		s[1]<=Data_in;
 		for(k=2;k<=7;k=k+1)
 			s[k]<=s[k-1];
+	end
+	else begin
+		for(k=0;k<=7;k=k+1)
+			s[k]<=s[k];
 	end
 
 endmodule

@@ -4,7 +4,7 @@
 // Version 1.3
 //-------------------------------------------------
 
-module IFIR_4th_stage_V1p3(Data_out,Data_in,clock_in,clock_div4,clock_div2,clock_up,rstn);
+module IFIR_4th_stage_V1p3(Data_out,Data_in,clock_in,clock_div8,clock_div4,clock_div2,clock_up,neg_en,rstn);
 
 // Signed CSD coefficients
 parameter signed b1=28'b0000000000000000000010000100;
@@ -24,7 +24,7 @@ parameter signed b14=28'b0000000100100000000100100010;
 parameter signed b15=28'b0000000100100001000100010010;
 parameter signed b16=28'b0000000100001000001000100000;
 
-input clock_in,clock_div4,clock_div2,clock_up,rstn;
+input clock_in,clock_div8,clock_div4,clock_div2,clock_up,neg_en,rstn;
 input signed [23:0] Data_in; 
 output reg signed [23:0] Data_out;
 reg signed [23:0] s[0:3];
@@ -161,12 +161,12 @@ assign Data_a7=csdout[7]+csdout[15]+csdout[23];
 
 
 //MUX实现上采样
-assign up_count={clock_in,clock_div4,clock_div2};
-always @(negedge clock_up or negedge rstn)
+assign up_count={clock_div8,clock_div4,clock_div2};
+always @(posedge clock_up or negedge rstn)
 	if(rstn==0)begin
 		Data_out<=0;
 	end
-	else
+	else if (neg_en) begin
 		case(up_count)
 			3'b000: Data_out<=Data_a7[33:10];
 			3'b001: Data_out<=Data_a6[33:10];
@@ -177,18 +177,27 @@ always @(negedge clock_up or negedge rstn)
 			3'b110: Data_out<=Data_a1[33:10];
 			3'b111: Data_out<=Data_a0[33:10];
 			default: Data_out<=Data_a0[33:10];
-	endcase
+		endcase
+	end
+	else begin
+		Data_out <= Data_out;
+	end
 
 //完成移位的功能
-always @(posedge clock_in or negedge rstn)
+always @(posedge clock_up or negedge rstn) begin
 	if(rstn==0)begin
 		for(k=0;k<=3;k=k+1)
 			s[k]<=0;
 	end
-	else begin
+	else if(clock_in)begin
 		s[1]<=Data_in;
 		for(k=2;k<=3;k=k+1)
 			s[k]<=s[k-1];
 	end
+	else begin
+		for(k=0;k<=3;k=k+1)
+			s[k]<=s[k];
+	end
+end
 
 endmodule

@@ -8,7 +8,7 @@
 //#             Version 1.5                 #
 // #########################################
 
-module ISI_MS_18_V1p5(clk, rstn, V, ISI_SEL, MIS_SEL,
+module ISI_MS_18_V1p5(clk, clk_en, rstn, V, ISI_SEL, MIS_SEL,
 					  SVout, STout);
 
 //--------------------------------------------------
@@ -56,7 +56,7 @@ module ISI_MS_18_V1p5(clk, rstn, V, ISI_SEL, MIS_SEL,
 //					     Dig_Sel	 disable;
 //---------------------------------------------------
 
-input clk, rstn, ISI_SEL, MIS_SEL;
+input clk, clk_en, rstn, ISI_SEL, MIS_SEL;
 input signed [5:0] V;
 output [17:0] SVout;
 output [17:0] STout;
@@ -82,35 +82,41 @@ reg signed [5:0] Vinput;
 
 assign SVDB=~SVD;
 
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn) begin
 	if(rstn==0)begin
 		Vinput<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		Vinput<=V;
 	end
+	else begin
+		Vinput<=Vinput;
+	end
+end
 
 // Dither Sequence Generator
-Dither_Gen18 Dither_Gen18(.clk(clk), .rstn(rstn),
+Dither_Gen18 Dither_Gen18(.clk(clk),
+						  .clk_en(clk_en),
+						  .rstn(rstn),
 					      .dither(dither));
 
 // De-couple Sequence Generator
-Decp_Gen18 Decp_Gen18(.clk(clk), .rstn(rstn), .dither(dither), .V(Vinput),
+Decp_Gen18 Decp_Gen18(.clk(clk), .clk_en(clk_en), .rstn(rstn), .dither(dither), .V(Vinput),
 				      .Gama(Gama), .Beta(Beta));
 
 // HMLF Operation
-HMLF18_2nd_V1p5 HMLF18_2nd(.clk(clk), .rstn(rstn), .SV(SV),.SD(SVD),
+HMLF18_2nd_V1p5 HMLF18_2nd(.clk(clk), .clk_en(clk_en), .rstn(rstn), .SV(SV),.SD(SVD),
 						   .SFM17(SFM[17]), .SFM16(SFM[16]), .SFM15(SFM[15]), .SFM14(SFM[14]), .SFM13(SFM[13]),
 						   .SFM12(SFM[12]), .SFM11(SFM[11]), .SFM10(SFM[10]), .SFM9(SFM[9]),
 						   .SFM8(SFM[8]),   .SFM7(SFM[7]),   .SFM6(SFM[6]),   .SFM5(SFM[5]),   .SFM4(SFM[4]),
 						   .SFM3(SFM[3]),   .SFM2(SFM[2]),   .SFM1(SFM[1]),   .SFM0(SFM[0]));
 
 // Transition Operation
-Tran_Det18 Tran_Det18(.clk(clk), .rstn(rstn), .SV(SVD), //这个SV的传输需要非常的注意，必须是SV的一个delay周期
+Tran_Det18 Tran_Det18(.clk(clk), .clk_en(clk_en), .rstn(rstn), .SV(SVD), //这个SV的传输需要非常的注意，必须是SV的一个delay周期
 				      .ST(ST));
 
 // HILF Operation
-HILF18_1st HILF18_1st(.clk(clk), .rstn(rstn), .ST(ST),
+HILF18_1st HILF18_1st(.clk(clk), .clk_en(clk_en), .rstn(rstn), .ST(ST),
 				      .SFI17(SFI[17]), .SFI16(SFI[16]), .SFI15(SFI[15]), .SFI14(SFI[14]), .SFI13(SFI[13]),
 					  .SFI12(SFI[12]), .SFI11(SFI[11]), .SFI10(SFI[10]), .SFI9(SFI[9]),
 				      .SFI8(SFI[8]),   .SFI7(SFI[7]),   .SFI6(SFI[6]),   .SFI5(SFI[5]),   .SFI4(SFI[4]),

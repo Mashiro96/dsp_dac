@@ -69,8 +69,6 @@ wire   [47:0]        out_fifo_wdata;
 wire   [47:0]        out_data;
 wire                 dsp_dac_isi_en;
 wire                 dsp_dac_mis_en;
-wire                 outclk_rise_edge;
-reg                  outclk_d;
 reg                  out_cnt;
 reg                  first_read;
 
@@ -169,15 +167,8 @@ assign dout_en = !outputfifo_empty;
 
 always @ (posedge pclk or negedge rst_n) begin
     if (!rst_n)
-        outclk_d <= 1'b0;
-    else
-        outclk_d <= outclk;
-end
-
-always @ (posedge pclk or negedge rst_n) begin
-    if (!rst_n)
         out_cnt <= 1'b0;
-    else if (outclk_rise_edge)
+    else if (outclk)
         out_cnt <= ~out_cnt;
     else
         out_cnt <= out_cnt;
@@ -186,17 +177,15 @@ end
 always @ (posedge pclk or negedge rst_n) begin
     if (!rst_n)
         first_read <= 1'b0;
-    else if (outclk_rise_edge && out_cnt)
+    else if (outclk && out_cnt)
         first_read <= 1'b0;
-    else if (outclk_rise_edge)
+    else if (outclk)
         first_read <= !outputfifo_empty && !out_cnt;
     else 
         first_read <= first_read;
 end
 
-assign outclk_rise_edge = !outclk_d && outclk;
-
-assign read_en = out_cnt && !outputfifo_empty && outclk_rise_edge && first_read;
+assign read_en = out_cnt && !outputfifo_empty && outclk && first_read;
 assign out_data = out_fifo_rdata & {48{!outputfifo_empty}};
 assign dout = out_cnt ? out_data[47:24] : out_data[23:0];
 

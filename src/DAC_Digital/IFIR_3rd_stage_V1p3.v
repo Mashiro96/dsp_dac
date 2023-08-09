@@ -4,7 +4,7 @@
 // Version 1.3
 //-------------------------------------------------
 
-module IFIR_3rd_stage_V1p3(Data_out,Data_in,clock_in,clock_div2,clock_up,rstn);
+module IFIR_3rd_stage_V1p3(Data_out,Data_in,clock_in,clock_div4,clock_div2,clock_up,neg_en,clock,rstn);
 
 // Singed CSD coefficients
 parameter signed b1=28'b0000000000000000000000010010;
@@ -22,8 +22,11 @@ parameter signed b12=28'b0000000100010010000100001000;
 parameter signed b13=28'b0000010010001000000010000000;
 
 input clock_in;
+input clock_div4;
 input clock_div2;
 input clock_up; 
+input clock;
+input neg_en;
 input rstn;
 input signed [23:0] Data_in; 
 output reg signed [23:0] Data_out;
@@ -133,12 +136,12 @@ assign Data_a3=csdout[3]+csdout[7]+csdout[11]+
 			   csdout[15]+csdout[19]+csdout[23];
 
 //MUX实现上采样
-assign up_count={clock_in,clock_div2};
-always @(negedge clock_up or negedge rstn)
+assign up_count={clock_div4,clock_div2};
+always @(negedge clock or negedge rstn)
 	if(rstn==0)begin
 		Data_out<=0;
 	end
-	else 
+	else if (neg_en) begin 
 		case(up_count)
 			2'b00: Data_out<=Data_a3[34:11];
 			2'b01: Data_out<=Data_a2[34:11];
@@ -146,17 +149,25 @@ always @(negedge clock_up or negedge rstn)
 			2'b11: Data_out<=Data_a0[34:11];
 			default: Data_out<=Data_a0[34:11];
 		endcase
+	end
+	else begin
+		Data_out<=Data_out;
+	end
 
 //完成移位的功能
-always @(posedge clock_in or negedge rstn)
+always @(posedge clock or negedge rstn)
 	if(rstn==0)begin
 		for(k=0;k<=6;k=k+1)
 			s[k]<=0;
 	end
-	else begin
+	else if(clock_in)begin
 		s[1]<=Data_in;
 		for(k=2;k<=6;k=k+1)
 			s[k]<=s[k-1];
+	end
+	else begin
+		for(k=0;k<=6;k=k+1)
+			s[k]<=s[k];
 	end
 
 endmodule

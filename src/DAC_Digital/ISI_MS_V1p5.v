@@ -11,7 +11,7 @@
 //#      Update: 2023/7/05        #
 // ###############################
 
-module ISI_MS_V1p5(clk, rstn, VB, VC, ISI_SEL, MIS_SEL,
+module ISI_MS_V1p5(clk, clk_en, rstn, VB, VC, ISI_SEL, MIS_SEL,
 				   SVBout, STBout, SVCout, STCout);
 
 //--------------------------------------------------
@@ -62,7 +62,7 @@ module ISI_MS_V1p5(clk, rstn, VB, VC, ISI_SEL, MIS_SEL,
 //					     Dig_Sel	 disable;
 //---------------------------------------------------
 
-input clk, rstn, ISI_SEL, MIS_SEL;
+input clk, clk_en, rstn, ISI_SEL, MIS_SEL;
 input signed [5:0] VB;
 input signed [3:0] VC;
 output [17:0] SVBout;
@@ -71,11 +71,11 @@ output [17:0] STBout;
 output [5:0]  STCout;
 
 // ISI_MS_18 Operaiton
-ISI_MS_18_V1p5 ISI_MS_18_V1p5(.clk(clk), .rstn(rstn), .V(VB),  .ISI_SEL(ISI_SEL), .MIS_SEL(MIS_SEL),
+ISI_MS_18_V1p5 ISI_MS_18_V1p5(.clk(clk), .clk_en(clk_en), .rstn(rstn), .V(VB),  .ISI_SEL(ISI_SEL), .MIS_SEL(MIS_SEL),
 							  .SVout(SVBout), .STout(STBout));
 
 // ISI_MS_6 Operation
-ISI_MS_6_V1p5 ISI_MS_6_V1p5(.clk(clk), .rstn(rstn), .V(VC), .ISI_SEL(ISI_SEL), .MIS_SEL(MIS_SEL),
+ISI_MS_6_V1p5 ISI_MS_6_V1p5(.clk(clk), .clk_en(clk_en), .rstn(rstn), .V(VC), .ISI_SEL(ISI_SEL), .MIS_SEL(MIS_SEL),
 							.SVout(SVCout), .STout(STCout));
 
 endmodule

@@ -4,7 +4,7 @@
 // Version 1.6
 //########################################
 
-module Decp_Gen18(clk, rstn, dither, V, Gama, Beta);
+module Decp_Gen18(clk, clk_en, rstn, dither, V, Gama, Beta);
 
 //-----------------------------------
 // clk: input clock
@@ -15,7 +15,7 @@ module Decp_Gen18(clk, rstn, dither, V, Gama, Beta);
 // Beta: Input selected ones number
 //-----------------------------------
 
-input clk, rstn;
+input clk, clk_en, rstn;
 input signed [1:0] dither;
 input signed [5:0] V; //V<=16
 output [3:0] Gama;
@@ -35,7 +35,7 @@ reg  signed [1:0] LOD;
 reg  signed [5:0] VD; // V Delay
 
 // Delay的功能
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn)begin
 	if(rstn==0)begin
 		VD <=6'b0;
 		LFD<=2'b0;
@@ -43,13 +43,19 @@ always @(posedge clk or negedge rstn)
 //		Gama=0;
 		//Beta=0;
 	end
-	else begin
+	else if(clk_en)begin
 		VD <=V;
 		LFD<=LF;
 		LOD<=LO;
 //		Beta=V[4:0] - {1'b0,Gama};
 //		Gama=KA[4:1];
 	end
+	else begin
+		VD <=VD;
+		LFD<=LFD;
+		LOD<=LOD;
+	end
+end
 
 // Sel Node
 assign Vdiff=V-VD;

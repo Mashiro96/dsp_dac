@@ -4,7 +4,7 @@
 // Version 1.6
 //-----------------------------------
 
-module HILF6_1st(ST, clk, rstn,
+module HILF6_1st(ST, clk, clk_en, rstn,
 				 SFI5,SFI4,SFI3,SFI2,SFI1,SFI0);
 
 //----------------------------------
@@ -14,7 +14,7 @@ module HILF6_1st(ST, clk, rstn,
 //----------------------------------
 
 input [5:0] ST;
-input clk, rstn;
+input clk, clk_en, rstn;
 output [3:0] SFI5,SFI4,SFI3,SFI2,SFI1,SFI0;
 
 wire [3:0] FI  [5:0];
@@ -27,7 +27,7 @@ MIN6_HILF MIN6(.a5(SR[5]), .a4(SR[4]), .a3(SR[3]), .a2(SR[2]), .a1(SR[1]), .a0(S
 			   .b(SU));
 
 // 移位功能
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn) begin
 	if(rstn==0)begin
 		FID[5]<=0;
 		FID[4]<=0;
@@ -36,7 +36,7 @@ always @(posedge clk or negedge rstn)
 		FID[1]<=0;
 		FID[0]<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		FID[5]<=FI[5];
 		FID[4]<=FI[4];
 		FID[3]<=FI[3];
@@ -44,6 +44,15 @@ always @(posedge clk or negedge rstn)
 		FID[1]<=FI[1];
 		FID[0]<=FI[0];
 	end
+	else begin
+		FID[5]<=FID[5];
+		FID[4]<=FID[4];
+		FID[3]<=FID[3];
+		FID[2]<=FID[2];
+		FID[1]<=FID[1];
+		FID[0]<=FID[0];
+	end
+end
 
 // SR Node
 assign SR[5]={3'b0,ST[5]}+FID[5];

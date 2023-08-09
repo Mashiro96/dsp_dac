@@ -4,7 +4,7 @@
 // Version 1.6
 //###################################
 
-module HILF18_1st(ST, clk, rstn,
+module HILF18_1st(ST, clk, clk_en, rstn,
 				  SFI17,SFI16,SFI15,SFI14,SFI13,SFI12,SFI11,SFI10,
 				  SFI9,SFI8,SFI7,SFI6,SFI5,SFI4,SFI3,SFI2,SFI1,SFI0);
 
@@ -15,7 +15,7 @@ module HILF18_1st(ST, clk, rstn,
 //---------------------------------
 
 input [17:0] ST;
-input clk, rstn;
+input clk, clk_en, rstn;
 output [3:0] SFI17,SFI16,SFI15,SFI14,SFI13,SFI12,SFI11,SFI10,SFI9,SFI8,SFI7,SFI6,SFI5,SFI4,SFI3,SFI2,SFI1,SFI0;
 
 wire [3:0] FI  [17:0];
@@ -31,7 +31,7 @@ MIN18_HILF MIN18(.a17(SR[17]), .a16(SR[16]), .a15(SR[15]), .a14(SR[14]), .a13(SR
 				 .b(SU));
 
 // 移位功能
-always @(posedge clk or negedge rstn)
+always @(posedge clk or negedge rstn) begin
 	if(rstn==0)begin
 		FID[17]<=0;
 		FID[16]<=0;
@@ -52,7 +52,7 @@ always @(posedge clk or negedge rstn)
 		FID[1]<=0;
 		FID[0]<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		FID[17]<=FI[17];
 		FID[16]<=FI[16];
 		FID[15]<=FI[15];
@@ -72,6 +72,27 @@ always @(posedge clk or negedge rstn)
 		FID[1]<=FI[1];
 		FID[0]<=FI[0];
 	end
+	else begin
+		FID[17]<=FID[17];
+		FID[16]<=FID[16];
+		FID[15]<=FID[15];
+		FID[14]<=FID[14];
+		FID[13]<=FID[13];
+		FID[12]<=FID[12];
+		FID[11]<=FID[11];
+		FID[10]<=FID[10];
+		FID[9]<=FID[9];
+		FID[8]<=FID[8];
+		FID[7]<=FID[7];
+		FID[6]<=FID[6];
+		FID[5]<=FID[5];
+		FID[4]<=FID[4];
+		FID[3]<=FID[3];
+		FID[2]<=FID[2];
+		FID[1]<=FID[1];
+		FID[0]<=FID[0];
+	end
+end
 
 // SR Node
 assign SR[17]={3'b0,ST[17]}+FID[17];

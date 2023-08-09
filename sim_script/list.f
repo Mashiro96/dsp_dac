@@ -9,6 +9,7 @@
 ../src/Digital/sync_iis_port.v
 ../src/Digital/vol_trans.v
 ../src/Digital/async_iis_port.v
+../src/Digital/clock_divider.v
 ../tb/dsp_tb.v
 ../tb/top_tb.v
 ../src/DAC_Digital/Audio_DAC_Dig_V1p0.v

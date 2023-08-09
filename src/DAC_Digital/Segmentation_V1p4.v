@@ -7,9 +7,9 @@
 //# Change for noise cancellation             #
 // ###########################################
 
-module Segmentation_V1p4(clock,rstn,A,B,C);
+module Segmentation_V1p4(clock,clk_en,rstn,A,B,C);
 
-input clock,rstn;
+input clock,clk_en,rstn;
 input  signed [4:0] A; // input  signal
 output signed [5:0] B; // output signal
 output signed [3:0] C; // output signal
@@ -36,10 +36,15 @@ always @(posedge clock or negedge rstn)begin //first integrator
 		ED<=0;
 		AD<=0;
 	end
-	else begin
+	else if(clk_en)begin
 		SD<=S;
 		ED<=E;
 		AD<=A;
+	end
+	else begin
+		SD<=SD;
+		ED<=ED;
+		AD<=AD;
 	end
 end
 
